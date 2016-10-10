@@ -7,6 +7,7 @@ export interface Symbol {
 export interface Symbols {
     classes: { [name: string]: Symbol };
     modules: { [name: string]: Symbol };
+    callbacks: { [name: string]: Symbol };
 }
 
 function set_deep(parent, keys, value) {
@@ -25,7 +26,8 @@ function set_deep(parent, keys, value) {
 export function members(file: parser.File): Symbols {
     var acc: Symbols = {
         classes: {},
-        modules: {}
+        modules: {},
+        callbacks: {}
     };
 
     Object.keys(file).forEach(name => {
@@ -44,6 +46,10 @@ export function members(file: parser.File): Symbols {
 
             if (acc.classes[className])
                 acc.classes[className][memberName] = symbol;
+        }
+        // callback
+        else if(symbol.jsdoc.tags.some(t => t.title === 'callback')){
+            acc.callbacks[name] = symbol;
         }
         // Static member of module
         else if (name.lastIndexOf('.') <= 0){
@@ -64,10 +70,12 @@ export function members(file: parser.File): Symbols {
     // resolve nested modules
     var sanitizedAcc: Symbols = {
         classes: {},
-        modules: {}
+        modules: {},
+        callbacks: {}
     };
 
     sanitizedAcc.classes = acc.classes;
+    sanitizedAcc.callbacks = acc.callbacks;
 
     Object.keys(acc.modules).forEach(name => {
         var parts = name.split(".");

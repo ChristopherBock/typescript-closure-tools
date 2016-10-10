@@ -35,6 +35,15 @@ function unique(values: string[]): string[] {
 export function pretty(out: generate.Generated): string {
     var acc = '';
 
+    function get_callback_signature(cb: string): string {
+        var indexOfBracket = cb.indexOf('(');
+        if(indexOfBracket >= 0){
+            return cb.substr(indexOfBracket);
+        }
+
+        return 'invalid callback signature: ' + cb;
+    }
+
     function emit_reference(filePath) {
         if (filePath && filePath !== main.currentInput) {
             var reference = drop_prefix(filePath, options.inputRoot);
@@ -111,6 +120,18 @@ export function pretty(out: generate.Generated): string {
         }
 
         prettifyModule(out.modules[moduleName], moduleName, 1, true);
+    });
+
+    acc += '\n';
+
+    // callbacks
+    Object.keys(out.callbacks).forEach(callbackName => {
+        var cb = out.callbacks[callbackName];
+        var safeName = callbackName.replace(/\bstring\b/, '_string');
+        acc += cb.comment;
+        acc += 'interface ' + safeName + ' {\n';
+        acc += '    ' + get_callback_signature(cb.callback);
+        acc += '\n}\n';
     });
 
     return acc;

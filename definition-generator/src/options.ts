@@ -24,6 +24,7 @@ export var globals = get_option('globals');
 export var inputRoot = get_option('input_root') || '';
 export var outputRoot = get_option('output_root') || '';
 export var includePrivate = get_option('include_private') || false;
+export var replace_callbacks_by_signature = get_option('replace_callbacks_by_signature') || false;
 export var todo: InputOutput[] = [];
 
 for (var i = 0; i < options.length; i += 2) {

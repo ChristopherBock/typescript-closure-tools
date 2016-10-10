@@ -6,6 +6,7 @@
 import combine = require('./combine');
 import parser = require('./parser');
 import finder = require('./finder');
+import options = require('./options');
 import escodegen = require('escodegen');
 
 var reserved =  [
@@ -172,6 +173,22 @@ function generate_type(t) {
 
         if (params.length > 0)
             return t.name + '<' + params.join(', ') + '>';
+        if(options.replace_callbacks_by_signature){
+            if(Object.keys(callbacks).some(cbName => cbName === t.name)){
+                var cbSignature = callbacks[t.name].callback;
+                var signatureIndex = cbSignature.indexOf('(');
+                if(signatureIndex > 0)
+                    cbSignature = cbSignature.substring(signatureIndex);
+
+                var token = cbSignature.split(':');
+                if(token.length > 1){
+                    var returnType = token.pop(); 
+                    cbSignature = token.join(':');
+                    cbSignature += ' => ' + returnType;
+                }
+                return cbSignature.replace(';', '');
+            }
+        }
     }
 
     return result;
@@ -568,16 +585,37 @@ export interface Modules {
     }
 }
 
+export interface Callbacks {
+    [name: string]: {
+        callback: string,
+        comment: string
+    }
+}
+
 export interface Generated {
     references: string[];
-    modules: Modules
+    callbacks: Callbacks;
+    modules: Modules;
 }
 
 var references: { [symbol: string]: boolean } = {};
+var callbacks: Callbacks = {};
 
 export function defs(symbols: combine.Symbols): Generated {
     var modules: Modules = {};
+    callbacks = {};
     references = {};
+
+    // callbacks
+    Object.keys(symbols.callbacks).forEach(callbackName => {
+        var symbol : any = symbols.callbacks[callbackName];
+        var comment : string = '';
+        if(symbol.originalText)
+            comment = symbol.originalText + '\n';
+        callbacks[callbackName] = {'callback': '', 'comment': ''};
+        callbacks[callbackName].callback = generate_properties(callbackName, symbol)[0];
+        callbacks[callbackName].comment = comment;
+    });
 
     // Generate classes
     Object.keys(symbols.classes).forEach(name => {
@@ -637,6 +675,7 @@ export function defs(symbols: combine.Symbols): Generated {
 
     return {
         modules: modules,
+        callbacks: callbacks,
         references: Object.keys(references)
     };
 }

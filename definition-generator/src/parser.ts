@@ -255,6 +255,37 @@ function extract_jsdoc(tree) {
             })
         }
 
+        // See if there was a trailing callback definition
+        if(tree.trailingComments){
+            tree.trailingComments.forEach(comment => {
+                if(comment.value.includes('@callback')){
+                    function createParamList(tags) : string {
+                        var list : string = '';
+                        for(var i = 0; i < tags.length; i++){
+                            if(tags[i].title === 'param'){
+                                list += tags[i].name + ', ';
+                            }
+                        }
+
+                        if(list.lastIndexOf(', ') > 0){
+                            list = list.substr(0, list.length - 2);
+                        }
+
+                        return list;
+                    }
+
+                    var parsed_jsdoc = doctrine.parse(comment.value, { unwrap: true });
+                    var funcExpr = 'callback.name = function (' + createParamList(parsed_jsdoc.tags) + '){};';
+                    var value = esprima.parse('/*' + comment.value + '*/' + '\n' + funcExpr);
+
+                    docstrings[parsed_jsdoc.tags[0].description] = {
+                        value: value.body[0].expression.right,
+                        jsdoc: '/*' + comment.value + '*/'
+                    }
+                }
+            });
+        }
+
         // If tree is a function expression, create a new scope
         if (tree.type === 'FunctionExpression' || tree.type === 'FunctionDeclaration') {
             var params = tree.params.map(p => p.name);

@@ -27,6 +27,7 @@ closure2ts
   [--input_root input/dir]
   [--output_root output/dir]
   [--include_private boolean]
+  [--replace_callbacks_by_signature boolean]
   input/dir/input-file.js output/dir/output-file.d.ts
   input/dir/another-input-file.js output/dir/another-output-file.d.ts
   ...
@@ -38,6 +39,12 @@ If this option isn't present, we will simply look for global symbols in the inpu
 * `--input_root input/dir` Root of inputs, considered when computing relative paths for `///<reference path="..." />` tags.
 * `--output_root output/dir` Root of outputs, considered when computing relative paths for `///<reference path="..." />` tags.
 * `--include_private boolean` Whether to include items marked as private (@private), defaults to false.
+* `--replace_callbacks_by_signature` Whether to replace callbacks by their call signature when used as parameters, only possible if trailing JSDoc @callback definition exists.
+
+# Usage of the generated *.d.ts files in Typings
+* In your project do: `typings init`
+* followed by: `typings i file:path/to/your/file.d.ts --save --global
+* enjoy (strangely sometimes VisualStudio Code needs a reboot if you add new typings)!
 
 # Structure
 
