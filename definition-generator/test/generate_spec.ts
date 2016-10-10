@@ -14,6 +14,7 @@ function parse(fileName: string): generate.Modules {
     var file = parser.jsdoc(fs.readFileSync(fileName, 'utf8'));
     var symbols = combine.members(file);
     var result = generate.defs(symbols).modules;
+    var cbresult = generate.defs(symbols).callbacks;
 
     Object.keys(result).forEach(moduleName => {
         function get_text(mod : any) :any{
@@ -37,6 +38,10 @@ function parse(fileName: string): generate.Modules {
         result[moduleName] = get_text(result[moduleName]);
     });
 
+    Object.keys(cbresult).forEach(callbackName => {
+        result['cb_' + callbackName] = {'callback': cbresult[callbackName].callback};
+    });
+
     return result;
 }
 
@@ -47,6 +52,16 @@ describe('generate', () => {
             "example": {
                 "Class": "class Class extends Class__Class { } class Class__Class implements example.Interface { constructor(x: number|string); thisAssignment: string; thisDeclaration: number; overloadedMethod(x: number|string): void; interfaceMethod(x: number|string): void; }"
             }
+        });
+    });
+
+    it('callback', () => {
+        expect(parse('test/callback.js')).toEqual({
+            "example": {
+                "subscribeCallbackTest": "function subscribeCallbackTest(callback: callbackTest): void;",
+                '_comment': ''
+            },
+            'cb_callbackTest': {'callback': 'function callbackTest(testIndex: number): boolean;'}
         });
     });
 
