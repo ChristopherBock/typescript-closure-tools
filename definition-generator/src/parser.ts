@@ -137,6 +137,12 @@ function extract_jsdoc(tree) {
         if (!(tree instanceof Object))
             return;
 
+        if((is_global_assignment(tree) || is_global_declaration(tree) || is_this_assignment(tree) || is_this_declaration(tree) ||
+           (requirejs && is_assignment(tree)) || (requirejs && is_declaration(tree)) || (requirejs && is_function(tree)) || (requirejs && is_var(tree)))
+           && !tree.leadingComments){
+            console.log('ERROR: JSDoc missing for ' + escodegen.generate(tree.expression) + ' it will not be parsed correctly' );
+        }
+
         // If tree is a global assignment, add it to docstrings
         if (is_global_assignment(tree) && tree.leadingComments) {
             var name = escodegen.generate(tree.expression.left);
