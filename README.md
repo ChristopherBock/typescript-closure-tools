@@ -15,6 +15,8 @@ cd typescript-closure-tools
 git submodule update --init
 npm install
 node definition-generator/src/main.js test/class.js class.d.ts # Run a single example
+source scripts/test.sh # run tests on linux
+scripts\test.bat # run tests on windows
 sudo npm install -g 
 ```
 
