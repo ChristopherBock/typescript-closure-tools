@@ -96,8 +96,17 @@ export function members(file: parser.File): Symbols {
             return submod[pts[i]];
         }
 
-        var jsdoctmp = submodule(parts, parts.length - 2)[parts[parts.length - 1]].jsdoc;
-        var originalText = submodule(parts, parts.length - 2)[parts[parts.length - 1]].originalText;
+        var mod = submodule(parts, parts.length - 2)[parts[parts.length - 1]];
+        var jsdoctmp : any = undefined;
+        var originalText = 'no documentation available';
+        if(mod){
+            jsdoctmp = mod.jsdoc;
+            originalText = mod.originalText;
+        }
+        else {
+            console.error('ERROR: JSDoc is missing for ' + name + ' it will not be parsed correctly!');
+        }
+
         submodule(parts, parts.length - 2)[parts[parts.length - 1]] = acc.modules[name];
         submodule(parts, parts.length - 2)[parts[parts.length - 1]].jsdoc = jsdoctmp;
         submodule(parts, parts.length - 2)[parts[parts.length - 1]].originalText = originalText;
